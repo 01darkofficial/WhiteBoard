@@ -6,6 +6,7 @@ import Header from "@/components/dashboard/Header";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { useUserStore } from "@/store/userStore";
 import { useBoardStore } from "@/store/boardStore";
+import { getSocket } from "@/utils/scoket";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     const fetchUser = useUserStore(state => state.fetchUser);
@@ -23,6 +24,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             fetchBoards(user);
         }
     }, [user]);
+
+    // useEffect(() => {
+    //     const socket = getSocket();
+    //     socket.connect();
+
+    //     socket.on("connect", () => console.log("Connected to socket:", socket.id));
+
+    //     return () => {
+    //         socket.disconnect();
+    //     };
+    // }, []);
+
 
     const handleLogout = () => clearUser();
 

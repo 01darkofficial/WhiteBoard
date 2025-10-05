@@ -8,7 +8,7 @@ import { validate } from "../middleware/validation";
 
 const router = express.Router();
 
-router.post("/createElement", protect, createElementValidator, validate, createElement);
-router.get("/:boardId", protect, getBoardElements);
+router.get("/:boardId/getElements", protect, getBoardElements);
+router.post("/:boardId/createElement", protect, createElement);
 
 export default router;

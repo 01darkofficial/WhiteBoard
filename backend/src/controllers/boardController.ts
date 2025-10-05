@@ -1,6 +1,6 @@
 import { Response } from "express";
 import Board from "../models/Board";
-import Stroke from "../models/Stroke";
+import Stroke from "../models/BoardElement";
 import { AuthRequest } from "../utils/types";
 
 /**

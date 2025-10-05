@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { api } from "@/services/authService";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { User, UserStore } from "./types";
 
-export const useUserStore = create<UserStore>((set, get) => ({
+export const useUserStore = create<UserStore>()(persist((set, get) => ({
     user: null,
     loading: false,
 
@@ -23,4 +24,10 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
     setUser: (user) => set({ user }),
     clearUser: () => set({ user: null }),
-}));
+}),
+    {
+        name: "user-store", // key in localStorage
+        storage: createJSONStorage<{ user: User | null }>(() => localStorage), // (optional) default is localStorage anyway
+        partialize: (state) => ({ user: state.user }), // only persist "user", not "loading"
+    }
+));

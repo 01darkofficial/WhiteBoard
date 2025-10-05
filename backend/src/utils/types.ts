@@ -27,16 +27,17 @@ export interface IBoard extends Document {
     updatedAt: Date;
 }
 
-export interface IStroke extends Document {
-    board: Types.ObjectId; // which board this stroke belongs to
-    user: Types.ObjectId;  // who drew it
-    type: "pencil" | "line" | "rectangle"; // optional, for future
-    points: { x: number; y: number }[];
-    color: string;
-    thickness: number;
+export interface IBoardElement extends Document {
+    board: Types.ObjectId;
+    user: Types.ObjectId;
+    type: "stroke" | "shape" | "text" | "sticky";
+    data: any; // flexible for different element types
     createdAt: Date;
 }
 
 export interface AuthRequest extends Request {
     user?: IUser;
+}
+export interface AuthenticatedRequest extends Request {
+    user: IUser;
 }

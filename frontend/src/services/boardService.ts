@@ -31,3 +31,17 @@ export const getBoardApi = async (
         return { success: false, error: handleApiError(err) };
     }
 };
+export const deleteBoardApi = async (
+    user: User | null,
+    boardId: string
+): Promise<ApiResult<Board>> => {
+    try {
+        const response = await api.get<Board>(`/api/boards/${boardId}`, {
+            params: { user: user?._id },
+        });
+        console.log(response);
+        return { success: true, data: response.data };
+    } catch (err: unknown) {
+        return { success: false, error: handleApiError(err) };
+    }
+};

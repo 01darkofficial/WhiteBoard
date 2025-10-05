@@ -7,7 +7,8 @@ import { AuthRequest, Member } from "../utils/types";
  * Add a member to a board
  */
 export const addMember = async (req: AuthRequest, res: Response) => {
-    const { boardId, userId, permission } = req.body;
+    const { userId, permission } = req.body;
+    const { boardId } = req.params;
 
     if (!req.user?._id) {
         return res.status(401).json({ message: "Unauthorized" });

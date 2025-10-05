@@ -2,9 +2,11 @@
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
+import { Server } from "socket.io";
 import dotenv from 'dotenv';
 import app from './app';
 import connectDB from './db/connection';
+import { initSocket } from './socket';
 // import { Server as SocketIOServer } from 'socket.io';
 
 dotenv.config();
@@ -33,7 +35,18 @@ const startServer = async () => {
       // HTTP setup (development)
       server = http.createServer(app);
       console.log('Starting HTTP server...');
+
     }
+
+    // const io = new Server(server, {
+    //   cors: {
+    //     origin: "*",
+    //     methods: ["GET", "POST"],
+    //   },
+    // });
+
+    // Init socket
+    // initSocket(io);
 
     // Socket.io placeholder
     // const io = new SocketIOServer(server, { cors: { origin: process.env.FRONTEND_URL, credentials: true } });

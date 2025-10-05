@@ -35,3 +35,19 @@ export interface BoardState {
     addBoard: (user: User, name: string) => Promise<void>;
     deleteBoard: (boardId: string) => Promise<void>;
 }
+
+export interface BoardElement {
+    _id: string
+    board: Board;
+    user: User;
+    type: "stroke" | "shape" | "text" | "sticky";
+    data: any; // flexible for different element types
+    createdAt: Date;
+}
+
+export interface BoardElementState {
+    elements: BoardElement[];
+    fetchElements: (user: User, boardId: string) => Promise<void>;
+    addElement: (user: User, type: string, elementData: Partial<BoardElement>, boardId: string) => Promise<void>;
+    removeElement: (user: User, elementId: string, boardId: string) => Promise<void>;
+}
