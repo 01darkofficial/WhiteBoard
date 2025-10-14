@@ -38,15 +38,16 @@ const startServer = async () => {
 
     }
 
-    // const io = new Server(server, {
-    //   cors: {
-    //     origin: "*",
-    //     methods: ["GET", "POST"],
-    //   },
-    // });
+    const io = new Server(server, {
+      cors: {
+        origin: "*",
+        credentials: true,
+        methods: ["GET", "POST", 'PUT', 'PATCH', 'DELETE'],
+      },
+    });
 
     // Init socket
-    // initSocket(io);
+    initSocket(io);
 
     // Socket.io placeholder
     // const io = new SocketIOServer(server, { cors: { origin: process.env.FRONTEND_URL, credentials: true } });

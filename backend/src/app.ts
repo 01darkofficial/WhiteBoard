@@ -7,6 +7,8 @@ import morgan from 'morgan';
 import authRoutes from './routes/authRoutes';
 import boardRoutes from './routes/boardRoutes';
 import boardElementRoutes from './routes/boardElementRoutes';
+import notificationRoutes from './routes/notificationRoutes'
+import membershipRoutes from './routes/memberRoutes';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -43,6 +45,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/board/', boardElementRoutes);
+app.use('/api/notifications/', notificationRoutes);
+app.use('/api/membership/', membershipRoutes);
 
 
 // Healthcheck

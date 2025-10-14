@@ -11,7 +11,7 @@ export const createBoardApi = async (
             user,
             name,
         });
-        console.log(response);
+        // console.log(response);
         return { success: true, data: response.data };
     } catch (err: unknown) {
         return { success: false, error: handleApiError(err) };
@@ -25,7 +25,7 @@ export const getBoardApi = async (
         const response = await api.get<Board[]>("/api/boards/", {
             params: { user: user?._id },
         });
-        console.log(response);
+        // console.log(response);
         return { success: true, data: response.data };
     } catch (err: unknown) {
         return { success: false, error: handleApiError(err) };
@@ -39,7 +39,7 @@ export const deleteBoardApi = async (
         const response = await api.get<Board>(`/api/boards/${boardId}`, {
             params: { user: user?._id },
         });
-        console.log(response);
+        // console.log(response);
         return { success: true, data: response.data };
     } catch (err: unknown) {
         return { success: false, error: handleApiError(err) };

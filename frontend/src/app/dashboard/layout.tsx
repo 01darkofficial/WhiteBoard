@@ -6,7 +6,8 @@ import Header from "@/components/dashboard/Header";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { useUserStore } from "@/store/userStore";
 import { useBoardStore } from "@/store/boardStore";
-import { getSocket } from "@/utils/scoket";
+// import { getSocket } from "@/lib/scoket";
+import { useNotificationStore } from "@/store/notificationStore";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     const fetchUser = useUserStore(state => state.fetchUser);
@@ -14,12 +15,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     const loading = useUserStore(state => state.loading);
     const fetchBoards = useBoardStore((state) => state.fetchBoards);
     const clearUser = useUserStore(state => state.clearUser);
+    const { fetchNotifications, notifications } = useNotificationStore();
 
     useEffect(() => {
         fetchUser();
     }, [fetchUser]);
 
     useEffect(() => {
+        fetchNotifications(false);
         if (user) {
             fetchBoards(user);
         }
@@ -27,6 +30,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     // useEffect(() => {
     //     const socket = getSocket();
+    //     console.log(process.env.NEXT_PUBLIC_SOCKET_URL);
     //     socket.connect();
 
     //     socket.on("connect", () => console.log("Connected to socket:", socket.id));

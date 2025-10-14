@@ -2,11 +2,13 @@
 import mongoose, { Schema } from "mongoose";
 import { IBoardElement } from "../utils/types";
 
+const ToolType = ["pencil", "eraser", "circle", "rectangle", "line", "stroke", "text", "sticky"];
+
 const BoardElementSchema = new Schema<IBoardElement>(
     {
         board: { type: Schema.Types.ObjectId, ref: "Board", required: true },
         user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        type: { type: String, required: true, enum: ["stroke", "shape", "text", "sticky"] },
+        type: { type: String, required: true, enum: ToolType },
         data: { type: Schema.Types.Mixed, required: true }, // flexible JSON field
     },
     { timestamps: true }

@@ -13,7 +13,7 @@ export const useUserStore = create<UserStore>()(persist((set, get) => ({
             set({ loading: true });
             const response = await api.get("/api/auth/user");
             set({ user: response.data });
-            console.log("User fetched:", response.data);
+            // console.log("User fetched:", response.data);
         } catch (err) {
             console.error("Failed to fetch user:", err);
             set({ user: null });

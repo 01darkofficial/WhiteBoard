@@ -12,7 +12,7 @@ export const createBoard = async (req: AuthRequest, res: Response) => {
         const board = await Board.create({
             name,
             owner: req.user?._id,
-            members: [{ user: req.user?._id, permission: "admin" }],
+            members: [{ user: req.user?._id, role: "admin", permissions: ["read", "write", "delete", "comment"] }],
             maxMembers: 10,
         });
         res.status(201).json(board);

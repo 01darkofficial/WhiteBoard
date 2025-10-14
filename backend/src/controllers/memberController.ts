@@ -1,27 +1,30 @@
 import { Response } from "express";
 import Board from "../models/Board";
 import { AuthRequest, Member } from "../utils/types";
-
+import { sendInvitation } from "./invitationController";
+import User from "../models/User";
 
 /**
  * Add a member to a board
  */
 export const addMember = async (req: AuthRequest, res: Response) => {
-    const { userId, permission } = req.body;
-    const { boardId } = req.params;
-
-    if (!req.user?._id) {
-        return res.status(401).json({ message: "Unauthorized" });
-    }
-
     try {
+        const userId = req.user?.id;
+        const { inviteeEmail, role, permissions, userEmail } = req.body;
+        const { boardId } = req.params;
+        const invitee = await User.findOne({ email: inviteeEmail });
+
+        if (!invitee) {
+            return res.status(404).json({ message: "Invitee not found" });
+        }
+
         const board = await Board.findById(boardId);
         if (!board) {
             return res.status(404).json({ message: "Board not found" });
         }
 
         // Only owner can add members
-        if (board.owner.toString() !== req.user._id.toString()) {
+        if (board.owner.toString() !== userId.toString()) {
             return res.status(403).json({ message: "You are not the owner of this board" });
         }
 
@@ -30,19 +33,35 @@ export const addMember = async (req: AuthRequest, res: Response) => {
             return res.status(400).json({ message: "Board has reached maximum members" });
         }
 
-        // Check if user is already a member
+        // Prevent user from self-invite
+        if (userId.toString() == invitee.id) {
+            return res.status(400).json({ error: "You cannot invite yourself" });
+        }
+
+        // Check if invitee is already a member
         const alreadyMember = board.members.some(
-            (m: Member) => m.user.toString() === userId
+            (m: Member) => m.user.toString() === invitee.id.toString()
         );
+
         if (alreadyMember) {
             return res.status(400).json({ message: "User is already a member" });
         }
 
+        const invitation = sendInvitation(
+            boardId,
+            userId, invitee.id,
+            role,
+            permissions,
+            userEmail,
+            inviteeEmail,
+            board.name
+        );
+        console.log(invitation);
         // Push new member
-        board.members.push({ user: userId, permission });
-        await board.save();
+        // board.members.push({ user: userId, permission });
+        // await board.save();
 
-        return res.status(200).json(board);
+        return res.status(200).json({ board, invitation });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "Something went wrong" });

@@ -6,7 +6,8 @@ const boardSchema = new mongoose.Schema<IBoard>({
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     members: [{
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        permission: { type: String, enum: ['read', 'write', 'admin'], required: true }
+        role: { type: String, enum: ['viewer', 'editor', 'admin'], required: true },
+        permissions: [{ type: String }]
     }],
     maxMembers: { type: Number },
 }, { timestamps: true });
