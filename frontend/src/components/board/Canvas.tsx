@@ -58,8 +58,8 @@ export default function Canvas({ boardId }: { boardId: string }) {
         return () => window.removeEventListener("resize", updateSize);
     }, []);
 
-    // Socket updates
-    useBoardSocket(boardId, {
+    // --- Use board-specific socket ---
+    const boardSocket = useBoardSocket(boardId, {
         onElementAdded: (data) => {
             addElement(user!, data.type, data.element, boardId);
         },
@@ -80,7 +80,6 @@ export default function Canvas({ boardId }: { boardId: string }) {
             };
             currentStrokeRef.current = stroke;
 
-            // Create live line for smooth drawing
             const line = new Konva.Line({
                 points: stroke.points,
                 stroke: stroke.color,
@@ -123,16 +122,15 @@ export default function Canvas({ boardId }: { boardId: string }) {
         if (!user) return;
 
         if ((tool === "pencil" || tool === "eraser") && currentStrokeRef.current) {
-            // Add to store and backend
             await addElement(user, "stroke", { user, type: "stroke", data: currentStrokeRef.current }, boardId);
-            emitAddElement(boardId, { user, type: "stroke", data: currentStrokeRef.current });
+            if (boardSocket) emitAddElement(boardSocket, boardId, { user, type: "stroke", data: currentStrokeRef.current });
 
             currentStrokeRef.current = null;
             currentLineRef.current = null;
         } else if (currentShape) {
             const type = tool === "circle" ? "circle" : tool === "rectangle" ? "rectangle" : "line";
             await addElement(user, type, { user, type, data: currentShape }, boardId);
-            emitAddElement(boardId, { user, type, data: currentShape });
+            if (boardSocket) emitAddElement(boardSocket, boardId, { user, type, data: currentShape });
             setCurrentShape(null);
         }
     };
