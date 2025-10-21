@@ -51,7 +51,7 @@ export interface BoardElementState {
     elements: BoardElement[];
     fetchElements: (user: User, boardId: string) => Promise<void>;
     addElement: (user: User, type: string, elementData: Partial<BoardElement>, boardId: string) => Promise<void>;
-    removeElement: (user: User, elementId: string, boardId: string) => Promise<void>;
+    removeElement: (user: User, boardId: string, elementId: string) => Promise<void>;
     addElementDirectly: (element: BoardElement) => void;
     updateElementDirectly: (elementId: string, changes: Partial<BoardElement>) => void;
     removeElementDirectly: (elementId: string,) => void;

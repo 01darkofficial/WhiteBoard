@@ -5,14 +5,12 @@ import Konva from "konva";
 import { useBoardElementsStore } from "@/store/boardElementStore";
 import { useUserStore } from "@/store/userStore";
 import { useToolStore } from "@/store/toolStore";
-import { ToolType } from "@/store/types";
 import { useBoardSocket, emitAddElement } from "@/hooks/useBoardSocket";
 
 interface Stroke {
     points: number[];
     color: string;
     thickness: number;
-    isEraser?: boolean;
 }
 
 interface Shape {
@@ -35,6 +33,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
     const elements = useBoardElementsStore((s) => s.elements);
     const fetchElements = useBoardElementsStore((s) => s.fetchElements);
     const addElement = useBoardElementsStore((s) => s.addElement);
+    const removeElement = useBoardElementsStore((s) => s.removeElement);
     const user = useUserStore((s) => s.user);
 
     const tool = useToolStore((s) => s.tool);
@@ -43,13 +42,13 @@ export default function Canvas({ boardId }: { boardId: string }) {
 
     const currentStrokeRef = useRef<Stroke | null>(null);
     const [currentShape, setCurrentShape] = useState<Shape | null>(null);
+    const [tempElement, setTempElement] = useState<any | null>(null); // for in-progress shapes
+    const [isDrawing, setIsDrawing] = useState(false);
 
-    // Fetch existing elements
     useEffect(() => {
         if (user && boardId) fetchElements(user, boardId);
     }, [user, boardId]);
 
-    // Resize canvas
     useEffect(() => {
         const updateSize = () =>
             setDimensions({ width: window.innerWidth - 480, height: window.innerHeight - 64 });
@@ -58,7 +57,6 @@ export default function Canvas({ boardId }: { boardId: string }) {
         return () => window.removeEventListener("resize", updateSize);
     }, []);
 
-    // --- Use board-specific socket ---
     const boardSocket = useBoardSocket(boardId, {
         onElementAdded: (data) => {
             addElement(user!, data.type, data.element, boardId);
@@ -71,15 +69,16 @@ export default function Canvas({ boardId }: { boardId: string }) {
         const pos = getPointer(e);
         if (!pos || !user) return;
 
-        if (tool === "pencil" || tool === "eraser") {
+
+        setIsDrawing(true); // <-- start drawing
+
+        if (tool === "pencil") {
             const stroke: Stroke = {
                 points: [pos.x, pos.y],
                 color,
                 thickness,
-                isEraser: tool === "eraser",
             };
             currentStrokeRef.current = stroke;
-
             const line = new Konva.Line({
                 points: stroke.points,
                 stroke: stroke.color,
@@ -87,51 +86,74 @@ export default function Canvas({ boardId }: { boardId: string }) {
                 lineCap: "round",
                 lineJoin: "round",
                 tension: 0.5,
-                globalCompositeOperation: stroke.isEraser ? "destination-out" : "source-over",
             });
             currentLineRef.current = line;
             layerRef.current.add(line);
             layerRef.current.batchDraw();
+            setTempElement({ id: "currentStroke", type: "stroke", data: stroke });
         } else if (tool === "circle") {
-            setCurrentShape({ x: pos.x, y: pos.y, radius: 0, color, thickness });
+            const shape = { x: pos.x, y: pos.y, radius: 0, color, thickness };
+            setCurrentShape(shape);
+            setTempElement({ id: "currentShape", type: "circle", data: shape });
         } else if (tool === "rectangle" || tool === "line") {
-            setCurrentShape({ x: pos.x, y: pos.y, width: 0, height: 0, color, thickness });
+            const shape = { x: pos.x, y: pos.y, width: 0, height: 0, color, thickness };
+            setCurrentShape(shape);
+            setTempElement({ id: "currentShape", type: tool, data: shape });
         }
     };
 
     const handleMove = (e: any) => {
+        if (!isDrawing) return; // <-- only update while drawing
         const pos = getPointer(e);
         if (!pos) return;
 
-        if ((tool === "pencil" || tool === "eraser") && currentStrokeRef.current && currentLineRef.current) {
+        if (tool === "pencil" && currentStrokeRef.current && currentLineRef.current) {
             currentStrokeRef.current.points.push(pos.x, pos.y);
             currentLineRef.current.points(currentStrokeRef.current.points);
             layerRef.current.batchDraw();
+            setTempElement({ id: "currentStroke", type: "stroke", data: currentStrokeRef.current });
         } else if (tool === "circle" && currentShape) {
             const dx = pos.x - currentShape.x;
             const dy = pos.y - currentShape.y;
-            setCurrentShape((prev) => prev ? { ...prev, radius: Math.sqrt(dx * dx + dy * dy) } : null);
+            const updated = { ...currentShape, radius: Math.sqrt(dx * dx + dy * dy) };
+            setCurrentShape(updated);
+            setTempElement({ id: "currentShape", type: "circle", data: updated });
         } else if ((tool === "rectangle" || tool === "line") && currentShape) {
-            setCurrentShape((prev) =>
-                prev ? { ...prev, width: pos.x - prev.x, height: pos.y - prev.y } : null
-            );
+            const updated = { ...currentShape, width: pos.x - currentShape.x, height: pos.y - currentShape.y };
+            setCurrentShape(updated);
+            setTempElement({ id: "currentShape", type: tool, data: updated });
         }
     };
 
     const handleEnd = async () => {
         if (!user) return;
 
-        if ((tool === "pencil" || tool === "eraser") && currentStrokeRef.current) {
-            await addElement(user, "stroke", { user, type: "stroke", data: currentStrokeRef.current }, boardId);
-            if (boardSocket) emitAddElement(boardSocket, boardId, { user, type: "stroke", data: currentStrokeRef.current });
+        setIsDrawing(false); // <-- stop drawing
 
+        if (tool === "pencil" && currentStrokeRef.current) {
+            await addElement(user, "stroke", { user, type: "stroke", data: currentStrokeRef.current }, boardId);
+            if (boardSocket)
+                emitAddElement(boardSocket, boardId, { user, type: "stroke", data: currentStrokeRef.current });
             currentStrokeRef.current = null;
             currentLineRef.current = null;
+            setTempElement(null);
         } else if (currentShape) {
             const type = tool === "circle" ? "circle" : tool === "rectangle" ? "rectangle" : "line";
             await addElement(user, type, { user, type, data: currentShape }, boardId);
-            if (boardSocket) emitAddElement(boardSocket, boardId, { user, type, data: currentShape });
+            if (boardSocket)
+                emitAddElement(boardSocket, boardId, { user, type, data: currentShape });
             setCurrentShape(null);
+            setTempElement(null);
+        }
+    };
+
+    const handleElementClick = async (elId: string) => {
+        if (!user) return;
+        if (tool === "eraser") {
+            await removeElement(user, boardId, elId);
+            if (boardSocket) {
+                emitAddElement(boardSocket, boardId, { user, type: "erase", elementId: elId });
+            }
         }
     };
 
@@ -151,7 +173,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
                 onMouseLeave={handleEnd}
             >
                 <Layer ref={layerRef}>
-                    {elements.map((el, i) => {
+                    {[...elements, ...(tempElement ? [tempElement] : [])].map((el, i) => {
                         if (el.type === "stroke") {
                             return (
                                 <Line
@@ -162,7 +184,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
                                     tension={0.5}
                                     lineCap="round"
                                     lineJoin="round"
-                                    globalCompositeOperation={el.data.isEraser ? "destination-out" : "source-over"}
+                                    onClick={() => handleElementClick(el._id)}
                                 />
                             );
                         } else if (el.type === "circle") {
@@ -174,6 +196,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
                                     radius={el.data.radius}
                                     stroke={el.data.color}
                                     strokeWidth={el.data.thickness}
+                                    onClick={() => handleElementClick(el._id)}
                                 />
                             );
                         } else if (el.type === "rectangle") {
@@ -186,6 +209,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
                                     height={el.data.height}
                                     stroke={el.data.color}
                                     strokeWidth={el.data.thickness}
+                                    onClick={() => handleElementClick(el._id)}
                                 />
                             );
                         } else if (el.type === "line") {
@@ -196,48 +220,11 @@ export default function Canvas({ boardId }: { boardId: string }) {
                                     stroke={el.data.color}
                                     strokeWidth={el.data.thickness}
                                     lineCap="round"
+                                    onClick={() => handleElementClick(el._id)}
                                 />
                             );
                         }
                     })}
-
-                    {/* Current shape */}
-                    {currentShape && tool === "circle" && (
-                        <Circle
-                            x={currentShape.x}
-                            y={currentShape.y}
-                            radius={currentShape.radius}
-                            stroke={currentShape.color}
-                            strokeWidth={currentShape.thickness}
-                        />
-                    )}
-                    {currentShape && (tool === "rectangle" || tool === "line") && (
-                        <>
-                            {tool === "rectangle" && (
-                                <Rect
-                                    x={currentShape.x}
-                                    y={currentShape.y}
-                                    width={currentShape.width}
-                                    height={currentShape.height}
-                                    stroke={currentShape.color}
-                                    strokeWidth={currentShape.thickness}
-                                />
-                            )}
-                            {tool === "line" && (
-                                <Line
-                                    points={[
-                                        currentShape.x,
-                                        currentShape.y,
-                                        currentShape.x + currentShape.width!,
-                                        currentShape.y + currentShape.height!,
-                                    ]}
-                                    stroke={currentShape.color}
-                                    strokeWidth={currentShape.thickness}
-                                    lineCap="round"
-                                />
-                            )}
-                        </>
-                    )}
                 </Layer>
             </Stage>
         </div>

@@ -34,18 +34,19 @@ export const getBoardElementsApi = async (
     }
 }
 
-export const removeBoardElementApi = async (
+export const eraseBoardElementPointsApi = async (
     user: User | null,
-    elementId: string,
     boardId: string,
-): Promise<ApiResult<BoardElement>> => {
+    pointsToDelete: number[]
+): Promise<ApiResult<null>> => {
     try {
-        const response = await api.delete<BoardElement>(`/api/boards/${boardId}/deleteElement/${elementId}`, {
-            params: { user }
+        await api.patch(`/api/board/${boardId}/erasePoints`, {
+            user,
+            pointsToDelete
         });
-        console.log(response);
-        return { success: true, data: response.data };
+        return { success: true, data: null };
     } catch (err: unknown) {
         return { success: false, error: handleApiError(err) };
     }
-}
+};
+

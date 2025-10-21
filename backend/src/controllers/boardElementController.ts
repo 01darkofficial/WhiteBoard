@@ -40,3 +40,29 @@ export const getBoardElements = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Failed to fetch elements" });
     }
 };
+
+export const removeElement = async (req: Request, res: Response) => {
+    const { boardId, elementId } = req.params;
+    // const { user } = req.body;
+
+    if (!elementId) {
+        return res.status(400).json({ message: "Element ID not provided" });
+    }
+
+    try {
+        // Delete element by ID and board
+        const deleted = await BoardElement.findOneAndDelete({ _id: elementId, board: boardId });
+
+        if (!deleted) {
+            return res.status(404).json({ message: "Element not found" });
+        }
+
+        res.json({ message: "Element deleted successfully" });
+    } catch (err) {
+        console.error("Failed to delete element:", err);
+        res.status(500).json({ message: "Failed to delete element" });
+    }
+};
+
+
+

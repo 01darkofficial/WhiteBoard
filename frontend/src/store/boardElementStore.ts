@@ -3,9 +3,10 @@ import { create } from "zustand";
 import {
     getBoardElementsApi,
     addBoardElementApi,
-    removeBoardElementApi,
+    eraseBoardElementPointsApi,
 } from "@/services/boardElementService";
 import { BoardElementState, User, BoardElement } from "@/store/types";
+import { api } from "@/services/authService";
 
 export const useBoardElementsStore = create<BoardElementState>((set, get) => ({
     elements: [],
@@ -38,14 +39,17 @@ export const useBoardElementsStore = create<BoardElementState>((set, get) => ({
     },
 
     // Remove an element by its ID
-    removeElement: async (user: User, elementId: string, boardId: string) => {
+    removeElement: async (user: User, boardId: string, elementId: string) => {
         try {
-            const result = await removeBoardElementApi(user, elementId, boardId);
-            if (result.data) {
-                set({ elements: get().elements.filter((el) => el._id !== elementId) });
-            }
+            // call backend to delete the element by ID
+            await api.delete(`/api/board/${boardId}/removeElement/${elementId}`, { data: { user } });
+
+            // remove from local state
+            set((state) => ({
+                elements: state.elements.filter((el) => el._id !== elementId)
+            }));
         } catch (err) {
-            console.error("Failed to remove board element:", err);
+            console.error("Failed to erase element:", err);
         }
     },
 
