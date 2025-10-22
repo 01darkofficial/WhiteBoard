@@ -71,3 +71,28 @@ export interface INotification extends Document {
     updatedAt: Date;
     timeAgo?: string; // Virtual field
 }
+
+export interface IChat {
+    _id: Types.ObjectId;
+    userId: Types.ObjectId;
+    username: string;
+    msg: string;
+    // createdAt: Date;
+}
+
+export interface IBoardChat extends Document {
+    boardId: Types.ObjectId;
+    chats: IChat[];
+    createdAt: Date;
+}
+
+export function hasPermission(board: IBoard, userId: string, permissions: string[]) {
+    const member = board.members.find(
+        (m) => m.user.toString() === userId.toString()
+    );
+    if (!member) return false;
+
+    // Return true if any of the requested permissions exist in member.permissions
+    return permissions.some((perm) => member.permissions.includes(perm));
+}
+

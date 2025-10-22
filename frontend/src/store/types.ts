@@ -105,3 +105,19 @@ export interface ToolState {
     setColor: (color: string) => void;
     setThickness: (thickness: number) => void;
 }
+
+export interface ChatMessage {
+    _id: string;
+    userId: string;
+    username: string;
+    msg: string;
+    timestamp: number;
+}
+
+export interface ChatStore {
+    messages: ChatMessage[];
+    fetchMessages: (boardId: string) => void;
+    addMessage: (boardId: string, user: string, msg: string) => void;
+    removeMessage: (id: string) => void;
+    clearMessages: () => void;
+}

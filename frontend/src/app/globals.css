@@ -11,16 +11,19 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #ecfdf5; /* emerald-50 */
+  background: #ecfdf5;
+  /* emerald-50 */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #059669; /* emerald-600 */
+  background: #059669;
+  /* emerald-600 */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #047857; /* emerald-700 */
+  background: #047857;
+  /* emerald-700 */
 }
 
 /* Firefox scrollbar */

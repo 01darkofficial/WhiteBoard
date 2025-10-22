@@ -2,6 +2,7 @@ import { Response } from "express";
 import Board from "../models/Board";
 import Stroke from "../models/BoardElement";
 import { AuthRequest } from "../utils/types";
+import BoardChat from "../models/BoardChat";
 
 /**
  * Create a new board
@@ -15,6 +16,7 @@ export const createBoard = async (req: AuthRequest, res: Response) => {
             members: [{ user: req.user?._id, role: "admin", permissions: ["read", "write", "delete", "comment"] }],
             maxMembers: 10,
         });
+        await BoardChat.create({ boardId: board._id, chats: [] });
         res.status(201).json(board);
     } catch (err) {
         console.error(err);

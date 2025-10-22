@@ -1,4 +1,6 @@
-"use client"
+"use client";
+import { useState, useRef, useEffect } from "react";
+import { useChatStore } from "@/store/chatStore";
 
 interface Member {
     name: string;
@@ -7,26 +9,134 @@ interface Member {
 
 interface RightSidebarProps {
     members: Member[];
+    boardId: string; // Pass boardId for API integration
+    username: string | undefined;
 }
 
-export default function RightSidebar({ members }: RightSidebarProps) {
-    const activeMembers = members.filter(m => m.active);
-    const inactiveMembers = members.filter(m => !m.active);
+export default function RightSidebar({ members, boardId, username }: RightSidebarProps) {
+    const [dividerY, setDividerY] = useState(250);
+    const sidebarRef = useRef<HTMLDivElement>(null);
+    const isDragging = useRef(false);
+    const [inputText, setInputText] = useState("");
+
+    const chatMessages = useChatStore((s) => s.messages);
+    const fetchMessages = useChatStore((s) => s.fetchMessages);
+    const addMessage = useChatStore((s) => s.addMessage);
+
+
+
+    // --- Divider drag handlers ---
+    const handleMouseDown = () => (isDragging.current = true);
+    const handleMouseUp = () => (isDragging.current = false);
+
+    const handleMouseMove = (e: MouseEvent) => {
+        if (!isDragging.current || !sidebarRef.current) return;
+        const sidebarRect = sidebarRef.current.getBoundingClientRect();
+        const offsetY = e.clientY - sidebarRect.top;
+
+        const minMembersHeight = 120;
+        const minChatHeight = 200;
+
+        const newHeight = Math.min(
+            Math.max(offsetY, minMembersHeight),
+            sidebarRect.height - minChatHeight
+        );
+
+        setDividerY(newHeight);
+    };
+
+    useEffect(() => {
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, []);
+
+    // --- Fetch messages on load ---
+    useEffect(() => {
+        if (boardId) {
+            fetchMessages(boardId);
+        }
+    }, [boardId]);
+
+    const activeMembers = members.filter((m) => m.active);
+    const inactiveMembers = members.filter((m) => !m.active);
+
+    const handleSendMessage = async () => {
+        if (!inputText.trim()) return;
+        await addMessage(boardId, username!, inputText); // store handles API
+        setInputText(""); // clear input
+    };
 
     return (
-        <aside className="w-60 bg-white shadow-inner p-4 flex flex-col">
-            <h2 className="text-lg font-semibold mb-4">Members</h2>
-            <div className="flex flex-col space-y-2">
-                {activeMembers.map((m, idx) => (
-                    <div key={idx} className="px-3 py-2 bg-green-100 rounded font-medium">
-                        {m.name} (Active)
+        <aside
+            ref={sidebarRef}
+            className="w-72 bg-white shadow-inner flex flex-col border-l border-gray-300 h-full select-none"
+        >
+            {/* Members Section */}
+            <div className="overflow-auto p-3" style={{ height: dividerY }}>
+                <h2 className="text-lg font-semibold mb-3">Members</h2>
+                <div className="flex flex-col space-y-2">
+                    {activeMembers.map((m, idx) => (
+                        <div key={idx} className="px-3 py-2 bg-green-100 rounded font-medium">
+                            {m.name} (Active)
+                        </div>
+                    ))}
+                    {inactiveMembers.map((m, idx) => (
+                        <div key={idx} className="px-3 py-2 bg-gray-100 rounded">
+                            {m.name} (Inactive)
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Divider */}
+            <div
+                onMouseDown={handleMouseDown}
+                className="h-2 bg-gray-300 hover:bg-gray-400 cursor-row-resize"
+            />
+
+            {/* Chat Section */}
+            <div className="flex-1 overflow-hidden bg-gray-50 p-4 flex flex-col">
+                <h2 className="text-lg font-semibold mb-3">Chat</h2>
+
+                {/* Chat container */}
+                <div className="flex-1 min-h-0 overflow-y-auto bg-white rounded-2xl shadow-sm p-3">
+                    <div className="space-y-2 text-sm text-gray-700">
+                        {(chatMessages || []).map((msg) => (
+                            <div
+                                key={msg._id}
+                                className={`p-2 rounded-md max-w-full break-words ${msg.username === "You" ? "bg-blue-100 ml-auto" : "bg-gray-100"
+                                    }`}
+                            >
+                                {msg.msg}
+                            </div>
+                        ))}
                     </div>
-                ))}
-                {inactiveMembers.map((m, idx) => (
-                    <div key={idx} className="px-3 py-2 bg-gray-100 rounded">
-                        {m.name} (Inactive)
-                    </div>
-                ))}
+                </div>
+
+
+                {/* Chat input */}
+                <div className="mt-3 flex">
+                    <input
+                        type="text"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder="Type a message..."
+                        className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        onKeyDown={async (e) => {
+                            if (e.key === "Enter") await handleSendMessage();
+                        }}
+                    />
+                    <button
+                        className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        onClick={handleSendMessage}
+                    >
+                        Send
+                    </button>
+                </div>
             </div>
         </aside>
     );

@@ -9,6 +9,7 @@ import boardRoutes from './routes/boardRoutes';
 import boardElementRoutes from './routes/boardElementRoutes';
 import notificationRoutes from './routes/notificationRoutes'
 import membershipRoutes from './routes/memberRoutes';
+import boardChatRoutes from './routes/boardChatRoutes'
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -47,6 +48,7 @@ app.use('/api/boards', boardRoutes);
 app.use('/api/board/', boardElementRoutes);
 app.use('/api/notifications/', notificationRoutes);
 app.use('/api/membership/', membershipRoutes);
+app.use('/api/chats/', boardChatRoutes);
 
 
 // Healthcheck

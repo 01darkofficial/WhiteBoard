@@ -9,7 +9,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
     fetchBoards: async (user) => {
         const result = await getBoardApi(user);
-        // console.log(result);
         set({ boards: result.data || [] });
     },
 

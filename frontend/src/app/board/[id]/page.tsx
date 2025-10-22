@@ -44,7 +44,7 @@ export default function BoardPage() {
             <div className="flex flex-1 overflow-hidden">
                 <LeftSidebar />
                 <Canvas boardId={boardId || ""} />
-                <RightSidebar members={members} />
+                <RightSidebar members={members} boardId={boardId!} username={user?.name} />
             </div>
 
             {/* Invite Modal */}

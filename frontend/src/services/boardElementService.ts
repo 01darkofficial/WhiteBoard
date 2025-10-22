@@ -12,7 +12,6 @@ export const addBoardElementApi = async (
         const response = await api.post<BoardElement>(`/api/board/${boardId}/createElement`, {
             user, type, ...data
         });
-        console.log(response);
         return { success: true, data: response.data };
     } catch (err: unknown) {
         return { success: false, error: handleApiError(err) };
@@ -27,7 +26,6 @@ export const getBoardElementsApi = async (
         const response = await api.get<BoardElement[]>(`/api/board/${boardId}/getElements`, {
             params: { user }
         });
-        console.log(response);
         return { success: true, data: response.data };
     } catch (err: unknown) {
         return { success: false, error: handleApiError(err) };
