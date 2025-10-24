@@ -23,6 +23,37 @@ interface Shape {
     thickness: number;
 }
 
+
+// helper to calculate distance from point to line segment
+function pointLineDistance(px: number, py: number, x1: number, y1: number, x2: number, y2: number) {
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
+
+    const dot = A * C + B * D;
+    const len_sq = C * C + D * D;
+    let param = -1;
+    if (len_sq !== 0) param = dot / len_sq;
+
+    let xx, yy;
+    if (param < 0) {
+        xx = x1;
+        yy = y1;
+    } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+    } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+    }
+
+    const dx = px - xx;
+    const dy = py - yy;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+
 export default function Canvas({ boardId }: { boardId: string }) {
     const stageRef = useRef<any>(null);
     const layerRef = useRef<any>(null);
@@ -147,15 +178,51 @@ export default function Canvas({ boardId }: { boardId: string }) {
         }
     };
 
-    const handleElementClick = async (elId: string) => {
-        if (!user) return;
-        if (tool === "eraser") {
-            await removeElement(user, boardId, elId);
-            if (boardSocket) {
-                emitAddElement(boardSocket, boardId, { user, type: "erase", elementId: elId });
+    const handleElementClick = async (e: any) => {
+        if (tool !== "eraser" || !user) return;
+        const pos = stageRef.current?.getPointerPosition();
+        if (!pos) return;
+
+        const hitRadius = 10; // increase for easier erasing
+
+        // Find element under the pointer (approx)
+        const elementToErase = elements.find((el) => {
+            if (el.type === "stroke") {
+                // Check distance to any point in stroke
+                for (let i = 0; i < el.data.points.length; i += 2) {
+                    const dx = el.data.points[i] - pos.x;
+                    const dy = el.data.points[i + 1] - pos.y;
+                    if (Math.sqrt(dx * dx + dy * dy) < hitRadius) return true;
+                }
+            } else if (el.type === "circle") {
+                const dx = el.data.x - pos.x;
+                const dy = el.data.y - pos.y;
+                if (Math.sqrt(dx * dx + dy * dy) < el.data.radius + hitRadius) return true;
+            } else if (el.type === "rectangle") {
+                if (
+                    pos.x >= el.data.x - hitRadius &&
+                    pos.x <= el.data.x + el.data.width + hitRadius &&
+                    pos.y >= el.data.y - hitRadius &&
+                    pos.y <= el.data.y + el.data.height + hitRadius
+                )
+                    return true;
+            } else if (el.type === "line") {
+                const x1 = el.data.x;
+                const y1 = el.data.y;
+                const x2 = el.data.x + el.data.width;
+                const y2 = el.data.y + el.data.height;
+                if (pointLineDistance(pos.x, pos.y, x1, y1, x2, y2) < hitRadius) return true;
             }
+            return false;
+        });
+
+        if (elementToErase) {
+            await removeElement(user, boardId, elementToErase._id);
+            if (boardSocket)
+                emitAddElement(boardSocket, boardId, { user, type: "erase", elementId: elementToErase._id });
         }
     };
+
 
     return (
         <div className="flex-1 flex justify-center items-center p-2 bg-gray-50">
@@ -164,10 +231,16 @@ export default function Canvas({ boardId }: { boardId: string }) {
                 height={dimensions.height}
                 ref={stageRef}
                 className="bg-white rounded-lg shadow-lg border border-gray-300"
-                onMouseDown={handleStart}
+                onMouseDown={(e) => {
+                    if (tool === "eraser") handleElementClick(e);
+                    else handleStart(e);
+                }}
                 onMouseMove={handleMove}
                 onMouseUp={handleEnd}
-                onTouchStart={handleStart}
+                onTouchStart={(e) => {
+                    if (tool === "eraser") handleElementClick(e);
+                    else handleStart(e);
+                }}
                 onTouchMove={handleMove}
                 onTouchEnd={handleEnd}
                 onMouseLeave={handleEnd}
