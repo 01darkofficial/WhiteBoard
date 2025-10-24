@@ -11,19 +11,12 @@ export default function LeftSidebar() {
             <h2 className="text-lg font-semibold mb-2">Tools</h2>
 
             <div className="flex flex-col gap-2">
-                <button
+                {/* <button
                     onClick={() => setTool("pencil")}
                     className={`flex items-center gap-2 px-3 py-2 rounded ${tool === "pencil" ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
                 >
                     <FaPencilAlt /> Pencil
-                </button>
-
-                <button
-                    onClick={() => setTool("eraser")}
-                    className={`flex items-center gap-2 px-3 py-2 rounded ${tool === "eraser" ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
-                >
-                    <FaEraser /> Eraser
-                </button>
+                </button> */}
 
                 <button
                     onClick={() => setTool("circle")}
@@ -44,6 +37,13 @@ export default function LeftSidebar() {
                     className={`flex items-center gap-2 px-3 py-2 rounded ${tool === "line" ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
                 >
                     <FaSlash /> Line
+                </button>
+
+                <button
+                    onClick={() => setTool("eraser")}
+                    className={`flex items-center gap-2 px-3 py-2 rounded ${tool === "eraser" ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
+                >
+                    <FaEraser /> Eraser
                 </button>
             </div>
 
