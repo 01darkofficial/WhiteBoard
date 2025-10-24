@@ -117,7 +117,7 @@ export interface ChatMessage {
 export interface ChatStore {
     messages: ChatMessage[];
     fetchMessages: (boardId: string) => void;
-    addMessage: (boardId: string, user: string, msg: string) => void;
+    addMessage: (boardId: string, username: string, msg: string) => void;
     removeMessage: (id: string) => void;
     clearMessages: () => void;
 }

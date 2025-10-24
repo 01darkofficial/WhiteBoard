@@ -12,10 +12,10 @@ export const getBoardChatApi = async (boardId: string): Promise<ApiResult<ChatMe
 
     }
 }
-export const updateBoardChatApi = async (boardId: string, user: string, msg: string): Promise<ApiResult<ChatMessage[]>> => {
+export const updateBoardChatApi = async (boardId: string, username: string, msg: string): Promise<ApiResult<ChatMessage[]>> => {
     try {
         const response = await api.patch<ChatMessage[]>(`/api/chats/${boardId}/updateChats`, {
-            user,
+            username,
             msg,
         });
         return { success: true, data: response.data };

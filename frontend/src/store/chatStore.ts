@@ -15,8 +15,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     },
 
     // Add a message locally and to the server
-    addMessage: async (boardId: string, user: string, msg: string) => {
-        const result = await updateBoardChatApi(boardId, user, msg);
+    addMessage: async (boardId: string, username: string, msg: string) => {
+        const result = await updateBoardChatApi(boardId, username, msg);
         if (result.success) {
             set({ messages: result.data }); // replace messages with updated array from server
         }

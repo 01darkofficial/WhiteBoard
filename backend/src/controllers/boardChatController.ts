@@ -25,7 +25,7 @@ export const getBoardChat = async (req: AuthRequest, res: Response) => {
 export const updateBoardChat = async (req: AuthRequest, res: Response) => {
     try {
         const { boardId } = req.params;
-        const { user, msg } = req.body;
+        const { username, msg } = req.body;
 
         if (!msg || typeof msg !== "string") {
             return res.status(400).json({ message: "Message is required and must be a string" });
@@ -50,7 +50,7 @@ export const updateBoardChat = async (req: AuthRequest, res: Response) => {
         const newMessage = {
             _id: new Types.ObjectId(),
             userId: req.user!.id,
-            username: user,
+            username: username,
             msg,
             timestamp: new Date(),
         };

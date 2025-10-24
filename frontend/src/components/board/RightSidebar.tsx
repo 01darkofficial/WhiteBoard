@@ -103,40 +103,50 @@ export default function RightSidebar({ members, boardId, username }: RightSideba
                 <h2 className="text-lg font-semibold mb-3">Chat</h2>
 
                 {/* Chat container */}
-                <div className="flex-1 min-h-0 overflow-y-auto bg-white rounded-2xl shadow-sm p-3">
-                    <div className="space-y-2 text-sm text-gray-700">
-                        {(chatMessages || []).map((msg) => (
+                <div className="flex-1 min-h-0 overflow-y-auto bg-white rounded-2xl shadow-sm p-3 flex flex-col">
+                    {(chatMessages || []).map((msg) => {
+                        const isMe = msg.username === username; // current logged-in user
+                        return (
                             <div
                                 key={msg._id}
-                                className={`p-2 rounded-md max-w-full break-words ${msg.username === "You" ? "bg-blue-100 ml-auto" : "bg-gray-100"
+                                className={`flex flex-col max-w-[80%] mb-2 ${isMe ? "ml-auto items-end" : "mr-auto items-start"
                                     }`}
                             >
-                                {msg.msg}
+                                <div
+                                    className={`p-2 rounded-md break-words ${isMe ? "bg-blue-100" : "bg-gray-100"
+                                        }`}
+                                >
+                                    {msg.msg}
+                                </div>
+                                <span className="text-xs text-gray-500 mt-1">
+                                    {msg.username}
+                                </span>
                             </div>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </div>
 
 
                 {/* Chat input */}
-                <div className="mt-3 flex">
+                <div className="mt-2 flex items-center gap-2">
                     <input
                         type="text"
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="flex-1 min-w-0 p-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                         onKeyDown={async (e) => {
                             if (e.key === "Enter") await handleSendMessage();
                         }}
                     />
                     <button
-                        className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        className="flex-shrink-0 px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
                         onClick={handleSendMessage}
                     >
                         Send
                     </button>
                 </div>
+
             </div>
         </aside>
     );
