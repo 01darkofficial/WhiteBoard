@@ -5,8 +5,13 @@ export interface IUser extends Document {
     name: string;
     email: string;
     password: string;
-    createdAt: Date;
-    updatedAt: Date;
+    avatar: string;
+    boardsCreated: number;         // total boards created by the user
+    activeBoards: number;          // number of boards currently active
+    joinedBoards: number;          // number of boards user has joined
+    recentActivity: string[];      // array of activity descriptions
+    readonly createdAt: Date;  // fixed
+    updatedAt: Date;           // automatically updated by Mongoose
 }
 
 export interface IUserDocument extends IUser, Document {

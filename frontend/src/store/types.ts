@@ -5,6 +5,12 @@ export interface User {
     name: string;
     avatar: string;
     email: string;
+    boardsCreated: number;
+    activeBoards: number;
+    joinedBoards: number;
+    recentActivity: string[];
+    readonly createdAt: string | Date;
+    updatedAt: string | Date;
 }
 
 export interface UserStore {
