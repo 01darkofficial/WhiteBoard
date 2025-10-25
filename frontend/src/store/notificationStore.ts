@@ -1,4 +1,3 @@
-// store/boardStore.ts
 import { create } from "zustand";
 import {
     getNotificationsApi,
@@ -14,36 +13,37 @@ export const useNotificationStore = create<NotificationsState>((set, get) => ({
     error: null,
 
     fetchNotifications: async (unreadOnly: boolean, limit?: number) => {
-        try {
-            set({ loading: true, error: null });
-            const result = await getNotificationsApi(unreadOnly, limit);
-            set({ notifications: result.data || [], loading: false });
-        } catch (err: any) {
-            console.error("Error fetching notifications:", err);
-            set({ error: err.message, loading: false });
+        set({ loading: true, error: null });
+        const res = await getNotificationsApi(unreadOnly, limit);
+        if (res.success && res.data) {
+            set({ notifications: res.data });
+        } else {
+            console.error("Error fetching notifications:", res.error);
+            set({ error: res.error });
         }
+        set({ loading: false });
     },
 
     respondToNotification: async (notificationId: string, response: string, userEmail: string) => {
         const res = await respondToNotificationApi(notificationId, response, userEmail);
-        if (res.data) {
+        if (res.success && res.data) {
             set({
-                notifications: get().notifications.map((notification) =>
-                    notification.id === res.data?.id ? { ...notification, ...res.data } : notification
+                notifications: get().notifications.map((n) =>
+                    n.id === res.data!.id ? { ...n, ...res.data! } : n
                 ),
             });
         } else {
-            throw new Error("Failed to update notification");
+            console.error("Failed to update notification:", res.error);
         }
     },
 
-    markRead: async (notificationID: string) => {
-        const res = await markReadApi(notificationID);
-        // optionally update store
+    markRead: async (notificationId: string) => {
+        const res = await markReadApi(notificationId);
+        if (!res.success) console.error("Failed to mark notification as read:", res.error);
     },
 
     markAllRead: async () => {
-        const result = await markAllReadApi();
-        // optionally update store
+        const res = await markAllReadApi();
+        if (!res.success) console.error("Failed to mark all notifications as read:", res.error);
     },
 }));
