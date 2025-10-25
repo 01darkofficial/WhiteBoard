@@ -29,9 +29,8 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({
-        _id: user._id,
-        name: user.name,
         email: user.email,
+        name: user.name
     });
 }
 
@@ -63,9 +62,8 @@ export const loginUser = async (req: Request, res: Response) => {
     console.log('logged in successfully');
 
     res.json({
-        _id: user._id,
-        name: user.name,
         email: user.email,
+        name: user.name
     });
 
 
@@ -91,3 +89,50 @@ export const getUser = async (req: AuthRequest, res: Response) => {
 
     res.json(user);
 }
+
+export const updateUser = async (req: AuthRequest, res: Response) => {
+    const userId = req.user?._id;
+
+    const { name, password, avatar } = req.body;
+
+    try {
+        const user = await User.findById(userId).select("+password");
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Update username
+        if (name && name !== user.name) {
+            user.name = name;
+        }
+
+        // Update password (hashed)
+        if (password) {
+            user.password = password;
+        }
+
+        // Update avatar
+        if (avatar) {
+            user.avatar = avatar; // string URL or base64 string
+        }
+
+        await user.save();
+
+        res.json(user);
+    } catch (err) {
+        console.error("Error updating user:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const deleteUser = async (req: AuthRequest, res: Response) => {
+    const userId = req.user?._id;
+
+    try {
+        await User.findByIdAndDelete(userId);
+        // Clear JWT cookie on delete
+        res.cookie('jwt', '', { httpOnly: true, expires: new Date(0), path: '/' });
+        res.status(200).json({ message: "Account deleted successfully" });
+    } catch (err) {
+        console.error("Error deleting user:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+};

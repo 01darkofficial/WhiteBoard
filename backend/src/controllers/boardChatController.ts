@@ -13,7 +13,6 @@ export const getBoardChat = async (req: AuthRequest, res: Response) => {
         if (!board) return res.status(404).json({ message: "Board not found" });
 
         const chat = await BoardChat.findOne({ boardId });
-        console.log(chat);
         res.status(201).json(chat!.chats);
     }
     catch (err) {

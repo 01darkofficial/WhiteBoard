@@ -11,7 +11,21 @@ const userSchema = new mongoose.Schema<IUserDocument>({
     activeBoards: { type: Number, default: 0 },
     joinedBoards: { type: Number, default: 0 },
     recentActivity: { type: [String], default: [] },
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: {
+        transform(doc, ret) {
+            delete (ret as Partial<IUserDocument>).password;
+            return ret;
+        }
+    },
+    toObject: {
+        transform(doc, ret) {
+            delete (ret as Partial<IUserDocument>).password;
+            return ret;
+        }
+    }
+});
 
 // Match user entered password to hashed password in database
 userSchema.methods.matchPassword = async function (enteredPassword: string) {
