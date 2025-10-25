@@ -19,6 +19,9 @@ export interface UserStore {
     fetchUser: () => Promise<void>;
     setUser: (user: User | null) => void;
     clearUser: () => void;
+    logoutUser: ()=>void;
+    updateUser: (data: { name?: string; password?: string; avatar?: string }) => Promise<void>;
+    deleteUser: () => Promise<{ success: boolean; error?: undefined; } | { success: boolean; error: any; }>
 }
 
 export interface Member {
