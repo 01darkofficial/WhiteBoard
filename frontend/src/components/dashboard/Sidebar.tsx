@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FaSignOutAlt } from "react-icons/fa";
 import { useUserStore } from "@/store/userStore";
+import { useRouter } from "next/navigation";
+
 
 interface SidebarProps {
     menuItems?: { name: string; path: string }[];
@@ -18,9 +20,11 @@ export default function Sidebar({
 }: SidebarProps) {
     const pathname = usePathname();
     const logoutUser = useUserStore((state) => state.logoutUser);
+    const router = useRouter();
 
     const handleLogout = () => {
         logoutUser()
+        router.push('/');
     };
 
     return (
