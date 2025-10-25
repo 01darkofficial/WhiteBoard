@@ -1,16 +1,15 @@
 "use client";
 
-import { FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FaUserCircle } from "react-icons/fa";
 import NotificationDropdown from "./NotificationDropdown";
 import { useEffect } from "react";
 import { useNotificationStore } from "@/store/notificationStore";
 
 interface HeaderProps {
     user: { name: string; avatar: string } | null;
-    onLogout: () => void;
 }
 
-export default function Header({ user, onLogout }: HeaderProps) {
+export default function Header({ user }: HeaderProps) {
     const {
         notifications,
         loading,
@@ -20,9 +19,8 @@ export default function Header({ user, onLogout }: HeaderProps) {
         markAllRead,
     } = useNotificationStore();
 
-    // Fetch notifications when component mounts
     useEffect(() => {
-        fetchNotifications(false); // fetch all, not just unread
+        fetchNotifications(false);
     }, [fetchNotifications]);
 
     return (
@@ -32,7 +30,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
             </div>
 
             <div className="flex items-center space-x-4">
-                {/* 🛎 Notification Dropdown (connected to Zustand) */}
+                {/* Notification Dropdown */}
                 <NotificationDropdown
                     notifications={notifications}
                     loading={loading}
@@ -42,29 +40,18 @@ export default function Header({ user, onLogout }: HeaderProps) {
                     onRefresh={() => fetchNotifications(false)}
                 />
 
-                {/* ⚙️ Settings */}
-                <button className="p-2 rounded-full hover:bg-emerald-200 transition">
-                    <FaCog size={18} className="text-emerald-700" />
-                </button>
-
-                {/* 👤 User Info */}
-                <div className="flex items-center space-x-2">
+                {/* User Avatar Only */}
+                {user?.avatar ? (
                     <img
-                        src={user?.avatar}
+                        src={user.avatar}
                         alt="User Avatar"
                         className="w-10 h-10 rounded-full border border-emerald-300"
                     />
-                    <span className="font-medium text-emerald-900">{user?.name}</span>
-                </div>
+                ) : (
+                    <FaUserCircle className="w-10 h-10 text-emerald-500" />
+                )}
 
-                {/* 🚪 Logout */}
-                <button
-                    onClick={onLogout}
-                    className="flex items-center space-x-1 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition"
-                >
-                    <FaSignOutAlt />
-                    <span>Logout</span>
-                </button>
+
             </div>
         </header>
     );

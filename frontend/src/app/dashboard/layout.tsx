@@ -25,6 +25,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         fetchNotifications(false);
         if (user) {
             fetchBoards(user);
+            console.log(user);
         }
     }, [user]);
 
@@ -47,7 +48,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Header user={user} onLogout={handleLogout} />
+            <Header user={user} />
             <div className="flex flex-1 overflow-hidden">
                 <Sidebar />
                 <main className="flex-1 p-6 overflow-y-auto">{children}</main>
