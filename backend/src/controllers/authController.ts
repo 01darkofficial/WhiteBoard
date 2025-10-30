@@ -42,12 +42,12 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const user = await User.findOne({ email }).select('+password') as IUserDocument;
     if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(404).json({ message: "User does not exists" });
     }
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Invalid credentials" });
     }
     const token = generateToken(user.id.toString());
 
