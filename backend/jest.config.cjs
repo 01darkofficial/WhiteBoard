@@ -6,14 +6,19 @@ module.exports = {
     clearMocks: true,
     verbose: true,
 
+    // 👇 Use new transform syntax (instead of deprecated globals)
+    transform: {
+        '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.test.json' }],
+    },
+
     setupFiles: ['<rootDir>/tests/setup/testEnvSetup.ts'],
     moduleFileExtensions: ['ts', 'js', 'json'],
-    transform: {},
 
+    // ⚙️ optional for now
     forceExit: true,
     detectOpenHandles: true,
 
-    // For paths starting with @
+    // For @ path aliases
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
     },
