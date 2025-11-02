@@ -57,9 +57,6 @@ export const addMember = async (req: AuthRequest, res: Response) => {
             board.name
         );
         console.log(invitation);
-        // Push new member
-        // board.members.push({ user: userId, permission });
-        // await board.save();
 
         return res.status(200).json({ board, invitation });
     } catch (err) {

@@ -45,3 +45,14 @@ export const deleteBoardApi = async (
         return { success: false, error: handleApiError(err) };
     }
 };
+
+export const getBoardByIdApi = async (boardId: string): Promise<ApiResult<Board>> => {
+    try {
+        const response = await api.get<Board>(`/api/boards/${boardId}`);
+        console.log(response);
+        return { success: true, data: response.data };
+    }
+    catch (err: unknown) {
+        return { success: false, error: handleApiError(err) };
+    }
+}

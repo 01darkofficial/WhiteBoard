@@ -1,19 +1,16 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "@/store/chatStore";
-
-interface Member {
-    name: string;
-    active: boolean;
-}
+import { Member } from "@/store/types";
 
 interface RightSidebarProps {
-    members: Member[];
+    members: (Member | undefined)[];
     boardId: string; // Pass boardId for API integration
     username: string | undefined;
+    userId: string | undefined;
 }
 
-export default function RightSidebar({ members, boardId, username }: RightSidebarProps) {
+export default function RightSidebar({ members, boardId, username, userId }: RightSidebarProps) {
     const [dividerY, setDividerY] = useState(250);
     const sidebarRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
@@ -22,8 +19,6 @@ export default function RightSidebar({ members, boardId, username }: RightSideba
     const chatMessages = useChatStore((s) => s.messages);
     const fetchMessages = useChatStore((s) => s.fetchMessages);
     const addMessage = useChatStore((s) => s.addMessage);
-
-
 
     // --- Divider drag handlers ---
     const handleMouseDown = () => (isDragging.current = true);
@@ -55,18 +50,19 @@ export default function RightSidebar({ members, boardId, username }: RightSideba
     }, []);
 
     // --- Fetch messages on load ---
+    console.log("members : ", members)
     useEffect(() => {
         if (boardId) {
             fetchMessages(boardId);
         }
     }, [boardId]);
 
-    const activeMembers = members.filter((m) => m.active);
-    const inactiveMembers = members.filter((m) => !m.active);
+    // const activeMembers = members.filter((m) => m?.active);
+    // const inactiveMembers = members.filter((m) => !m?.active);
 
-    const handleSendMessage = async () => {
+    const handleSendMessage = () => {
         if (!inputText.trim()) return;
-        await addMessage(boardId, username!, inputText); // store handles API
+        addMessage(boardId, username!, inputText); // store handles API
         setInputText(""); // clear input
     };
 
@@ -79,16 +75,16 @@ export default function RightSidebar({ members, boardId, username }: RightSideba
             <div className="overflow-auto p-3" style={{ height: dividerY }}>
                 <h2 className="text-lg font-semibold mb-3">Members</h2>
                 <div className="flex flex-col space-y-2">
-                    {activeMembers.map((m, idx) => (
-                        <div key={idx} className="px-3 py-2 bg-green-100 rounded font-medium">
-                            {m.name} (Active)
+                    {members.map((m, idx) => (
+                        <div key={idx} className="px-3 py-2 bg-green-100 rounded font-bold text-sm">
+                            {m?.user.name} (Active)
                         </div>
                     ))}
-                    {inactiveMembers.map((m, idx) => (
+                    {/* {inactiveMembers.map((m, idx) => (
                         <div key={idx} className="px-3 py-2 bg-gray-100 rounded">
-                            {m.name} (Inactive)
+                            {m?.name} (Inactive)
                         </div>
-                    ))}
+                    ))} */}
                 </div>
             </div>
 
@@ -105,7 +101,7 @@ export default function RightSidebar({ members, boardId, username }: RightSideba
                 {/* Chat container */}
                 <div className="flex-1 min-h-0 overflow-y-auto bg-white rounded-2xl shadow-sm p-3 flex flex-col">
                     {(chatMessages || []).map((msg) => {
-                        const isMe = msg.username === username; // current logged-in user
+                        const isMe = msg.userId === userId; // current logged-in user
                         return (
                             <div
                                 key={msg._id}
@@ -119,7 +115,7 @@ export default function RightSidebar({ members, boardId, username }: RightSideba
                                     {msg.msg}
                                 </div>
                                 <span className="text-xs text-gray-500 mt-1">
-                                    {msg.username}
+                                    {isMe ? "You" : msg.username}
                                 </span>
                             </div>
                         );
@@ -136,7 +132,7 @@ export default function RightSidebar({ members, boardId, username }: RightSideba
                         placeholder="Type a message..."
                         className="flex-1 min-w-0 p-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                         onKeyDown={async (e) => {
-                            if (e.key === "Enter") await handleSendMessage();
+                            if (e.key === "Enter") handleSendMessage();
                         }}
                     />
                     <button

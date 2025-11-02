@@ -15,10 +15,16 @@ export default function BoardPage() {
     const boardId = Array.isArray(params.id) ? params.id[0] : params.id;
     const user = useUserStore((state) => state.user);
     const boards = useBoardStore((state) => state.boards);
+    const getboardById = useBoardStore((state) => state.getBoardById);
 
     const [board, setBoard] = useState(() => boards.find(b => b._id === boardId));
     const [members, setMembers] = useState(board?.members || []);
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+    useEffect(() => {
+        getboardById(boardId!);
+    }, [boardId])
+
 
     useEffect(() => {
         if (!board) {
@@ -44,7 +50,7 @@ export default function BoardPage() {
             <div className="flex flex-1 overflow-hidden">
                 <LeftSidebar />
                 <Canvas boardId={boardId || ""} />
-                <RightSidebar members={members} boardId={boardId!} username={user?.name} />
+                <RightSidebar members={members} boardId={boardId!} username={user?.name} userId={user?._id} />
             </div>
 
             {/* Invite Modal */}

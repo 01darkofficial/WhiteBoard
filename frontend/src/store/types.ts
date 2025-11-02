@@ -19,21 +19,27 @@ export interface UserStore {
     fetchUser: () => Promise<void>;
     setUser: (user: User | null) => void;
     clearUser: () => void;
-    logoutUser: ()=>void;
+    logoutUser: () => void;
     updateUser: (data: { name?: string; password?: string; avatar?: string }) => Promise<void>;
     deleteUser: () => Promise<{ success: boolean; error?: undefined; } | { success: boolean; error: any; }>
 }
 
 export interface Member {
-    user: string;
-    permission: "read" | "write" | "admin";
+    active: boolean;
+    userId: string;
+    user:{
+        name: string;
+        _id: string;
+    }
+    role: string;
+    permissions: string[];
 }
 
 export interface Board {
     _id: string;
     name: string;
     owner: string;
-    members: Member[];
+    members: Partial<Member[]>;
     createdAt: string;
     updatedAt: string;
 }
@@ -43,6 +49,7 @@ export interface BoardState {
     fetchBoards: (user: User) => Promise<void>;
     addBoard: (user: User, name: string) => Promise<void>;
     deleteBoard: (boardId: string) => Promise<void>;
+    getBoardById: (boardId: string) => Promise<void>;
 }
 
 export type ToolType = "pencil" | "eraser" | "circle" | "rectangle" | "line" | "stroke" | "text" | "sticky";

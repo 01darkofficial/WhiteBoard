@@ -74,3 +74,17 @@ export const deleteBoard = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({ message: "Something went wrong" });
     }
 };
+
+export const getBoardById = async (req: AuthRequest, res: Response) => {
+    try {
+        const { boardId } = req.params;
+        const board = await Board.findById(boardId)
+            .populate('members.user', 'name'); // include fields you need
+        if (!board) return res.status(404).json({ message: "Board not found" });
+
+        res.json(board);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+};

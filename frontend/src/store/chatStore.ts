@@ -8,7 +8,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     // Fetch messages from server
     fetchMessages: async (boardId: string) => {
         const result = await getBoardChatApi(boardId);
-        console.log(result);
+        // console.log(result);
         if (result.success) {
             set({ messages: result.data });
         }
