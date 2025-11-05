@@ -34,10 +34,10 @@ export const updateBoardChat = async (req: AuthRequest, res: Response) => {
         if (!board) return res.status(404).json({ message: "Board not found" });
 
         // Check write permission
-        if (!hasPermission(board, req.user!.id, ["comment", "admin"])) {
+        if (!hasPermission(board, req.user!.id, ["comment", "admin", "write"])) {
             return res.status(403).json({ message: "You do not have write permission" });
         }
-
+        
         // Fetch the chat for the board
         let chat = await BoardChat.findOne({ boardId });
         if (!chat) {
