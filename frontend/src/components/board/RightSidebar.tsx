@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "@/store/chatStore";
 import { Member } from "@/store/types";
+import { useBoardSocket, emitUpdateChats, emitUpdateMembers } from "@/hooks/useBoardSocket";
 
 interface RightSidebarProps {
     members: (Member | undefined)[];
@@ -19,6 +20,7 @@ export default function RightSidebar({ members, boardId, username, userId }: Rig
     const chatMessages = useChatStore((s) => s.messages);
     const fetchMessages = useChatStore((s) => s.fetchMessages);
     const addMessage = useChatStore((s) => s.addMessage);
+    const addMessageDirectly = useChatStore((s) => s.addMessageDirectly);
 
     // --- Divider drag handlers ---
     const handleMouseDown = () => (isDragging.current = true);
@@ -50,7 +52,6 @@ export default function RightSidebar({ members, boardId, username, userId }: Rig
     }, []);
 
     // --- Fetch messages on load ---
-    console.log("members : ", members)
     useEffect(() => {
         if (boardId) {
             fetchMessages(boardId);
@@ -60,9 +61,23 @@ export default function RightSidebar({ members, boardId, username, userId }: Rig
     // const activeMembers = members.filter((m) => m?.active);
     // const inactiveMembers = members.filter((m) => !m?.active);
 
+    const boardSocket = useBoardSocket(boardId, {
+        onChatsUpdated: (data) => {
+            addMessageDirectly(data.changes);
+        },
+    });
+
     const handleSendMessage = () => {
         if (!inputText.trim()) return;
         addMessage(boardId, username!, inputText); // store handles API
+        const newMessage = {
+            _id: crypto.randomUUID(),
+            userId: userId,
+            username,
+            msg: inputText,
+            timestamp: Date.now(),
+        };
+        emitUpdateChats(boardSocket, boardId, newMessage)
         setInputText(""); // clear input
     };
 
@@ -76,9 +91,34 @@ export default function RightSidebar({ members, boardId, username, userId }: Rig
                 <h2 className="text-lg font-semibold mb-3">Members</h2>
                 <div className="flex flex-col space-y-2">
                     {members.map((m, idx) => (
-                        <div key={idx} className="px-3 py-2 bg-green-100 rounded font-bold text-sm">
-                            {m?.user.name} (Active)
+                        <div
+                            key={idx}
+                            className="flex items-center justify-between p-3 mb-2 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-all"
+                        >
+                            <div className="flex items-center gap-3">
+                                {/* Avatar circle */}
+                                {/* <div className="w-8 h-8 flex items-center justify-center rounded-full bg-green-200 text-green-700 font-semibold">
+                                    {m?.user.name.charAt(0).toUpperCase()}
+                                </div> */}
+
+                                {/* User info */}
+                                <div className="flex flex-col">
+                                    <span className="font-semibold text-gray-800 text-sm">
+                                        {m?.user.name}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                        {m?.role}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Status badge */}
+                            <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                Active
+                            </div>
                         </div>
+
                     ))}
                     {/* {inactiveMembers.map((m, idx) => (
                         <div key={idx} className="px-3 py-2 bg-gray-100 rounded">

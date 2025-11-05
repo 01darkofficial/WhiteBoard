@@ -5,6 +5,8 @@ interface BoardSocketOptions {
     onElementAdded?: (data: any) => void;
     onElementUpdated?: (data: any) => void;
     onElementDeleted?: (data: any) => void;
+    onMembersUpdated?: (data: any) => void;
+    onChatsUpdated?: (data: any) => void;
     onCursorMoved?: (data: any) => void;
     onUserTyping?: (data: any) => void;
     onError?: (err: any) => void;
@@ -32,8 +34,18 @@ export function useBoardSocket(boardId: string, options: BoardSocketOptions = {}
         s.on("element:added", options.onElementAdded || (() => { }));
         s.on("element:updated", options.onElementUpdated || (() => { }));
         s.on("element:deleted", options.onElementDeleted || (() => { }));
+
+        s.on("members:updated", options.onMembersUpdated || (() => { }));
+
+        s.on("chats:updated", (data) => {
+            console.log("📩 Chat update:", data);
+            (options.onChatsUpdated || (() => { }))(data);
+        });
+
         s.on("cursor:moved", options.onCursorMoved || (() => { }));
+
         s.on("user:typing", options.onUserTyping || (() => { }));
+
         s.on("error", options.onError || ((err) => console.error("Socket error:", err)));
 
         return () => {
@@ -56,6 +68,12 @@ export const emitUpdateElement = (socket: Socket | null, boardId: string, elemen
 
 export const emitDeleteElement = (socket: Socket | null, boardId: string, elementId: string) =>
     socket?.emit("element:delete", { boardId, elementId });
+
+export const emitUpdateMembers = (socket: Socket | null, boardId: string, memberId: string, changes: any) =>
+    socket?.emit("members:update", { boardId, memberId, changes });
+
+export const emitUpdateChats = (socket: Socket | null, boardId: string, changes: any) =>
+    socket?.emit("chats:update", { boardId, changes });
 
 export const emitCursorMove = (socket: Socket | null, boardId: string, userId: string, position: { x: number; y: number }) =>
     socket?.emit("cursor:move", { boardId, userId, position });

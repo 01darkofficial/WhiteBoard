@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { ChatStore } from "./types";
+import { ChatMessage, ChatStore } from "./types";
 import { getBoardChatApi, updateBoardChatApi } from "@/services/boardChatService";
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -21,6 +21,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             set({ messages: result.data }); // replace messages with updated array from server
         }
         // return result;
+    },
+
+    // Adds chats directly without backend call, for real time updates through sockets
+    addMessageDirectly: async (msg: ChatMessage) => {
+        set((state) => ({
+            messages: [...state.messages, msg],
+        }));
     },
 
     removeMessage: (id: string) =>

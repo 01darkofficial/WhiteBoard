@@ -49,9 +49,12 @@ export const useBoardStore = create<BoardState>((set, get) => ({
                     // ✅ Add new board safely
                     set({ boards: [...existingBoards, res.data] });
                 }
+                return res.data
             }
+            return null;
         } catch (err) {
             console.error("Failed to fetch board:", err);
+            return null;
         }
     },
 

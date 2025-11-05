@@ -39,6 +39,16 @@ export default function boardSocket(io: Server, socket: Socket) {
         socket.to(boardId).emit("element:deleted", { elementId });
     });
 
+    socket.on("members:update", ({ boardId, memberId, changes }) => {
+        if (!boardId) return socket.emit("error", { message: "Missing boardId" });
+        socket.to(boardId).emit("members:updated", { memberId, changes });
+    })
+
+    socket.on("chats:update", ({ boardId, userId, changes }) => {
+        if (!boardId) return socket.emit("error", { message: "Missing boardId" });
+        socket.to(boardId).emit("chats:updated", { userId, changes });
+    })
+
     socket.on("cursor:move", ({ boardId, userId, position }) => {
         if (!boardId) return;
         socket.to(boardId).emit("cursor:moved", { userId, position });

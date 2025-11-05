@@ -9,6 +9,7 @@ import Canvas from "@/components/board/Canvas";
 import InviteModal from "@/components/board/InviteModal";
 import { useUserStore } from "@/store/userStore";
 import { useBoardStore } from "@/store/boardStore";
+import { Board, Member } from "@/store/types";
 
 export default function BoardPage() {
     const params = useParams();
@@ -22,19 +23,17 @@ export default function BoardPage() {
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
     useEffect(() => {
-        getboardById(boardId!);
-    }, [boardId])
-
-
-    useEffect(() => {
-        if (!board) {
-            const found = boards.find(b => b._id === boardId);
-            if (found) {
-                setBoard(found);
-                setMembers(found.members);
+        const fetchBoard = async () => {
+            const fetched = await getboardById(boardId!);
+            if (fetched) {
+                setBoard(fetched);
+                setMembers(fetched.members);
             }
-        }
-    }, [boardId, boards, board]);
+        };
+
+        fetchBoard();
+    }, [boardId]);
+
 
     const handleInvite = () => setIsInviteModalOpen(true);
     const handleDelete = () => alert("Delete Board Confirmation (Coming Soon)");

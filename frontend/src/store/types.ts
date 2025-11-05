@@ -27,7 +27,7 @@ export interface UserStore {
 export interface Member {
     active: boolean;
     userId: string;
-    user:{
+    user: {
         name: string;
         _id: string;
     }
@@ -49,7 +49,7 @@ export interface BoardState {
     fetchBoards: (user: User) => Promise<void>;
     addBoard: (user: User, name: string) => Promise<void>;
     deleteBoard: (boardId: string) => Promise<void>;
-    getBoardById: (boardId: string) => Promise<void>;
+    getBoardById: (boardId: string) => Promise<Board | null>;
 }
 
 export type ToolType = "pencil" | "eraser" | "circle" | "rectangle" | "line" | "stroke" | "text" | "sticky";
@@ -134,6 +134,7 @@ export interface ChatStore {
     messages: ChatMessage[];
     fetchMessages: (boardId: string) => void;
     addMessage: (boardId: string, username: string, msg: string) => void;
+    addMessageDirectly: (msg: ChatMessage) => void;
     removeMessage: (id: string) => void;
     clearMessages: () => void;
 }
